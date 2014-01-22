@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "cucumber", ">= 1.1.5"
   s.add_dependency "vnctools", "~> 0.0.4"
+  s.add_dependency "spoon"
   s.add_development_dependency "rspec", "~> 2.5"
   s.add_development_dependency "simplecov"
   s.add_development_dependency "rake", "~> 0.9.2"

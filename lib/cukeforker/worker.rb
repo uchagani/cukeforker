@@ -3,19 +3,22 @@ module CukeForker
     include Observable
 
     class << self
-       attr_writer :id
-       def id; @id ||= -1; end
-     end
+      attr_writer :id
+
+      def id;
+        @id ||= -1;
+      end
+    end
 
     attr_reader :status, :feature, :pid, :format, :out, :id, :data
 
     def initialize(feature, format, out, extra_args = [])
-      @feature      = feature
-      @format       = format
-      @extra_args   = extra_args
-      @out          = out
-      @status       = nil
-      @data         = OpenStruct.new
+      @feature = feature
+      @format = format
+      @extra_args = extra_args
+      @out = out
+      @status = nil
+      @data = OpenStruct.new
 
       @id = self.class.id += 1
     end
@@ -32,11 +35,15 @@ module CukeForker
     end
 
     def start
-      @pid = Process.fork {
-        changed
-        notify_observers :on_worker_forked, self
-        execute_cucumber
-      }
+      if RUBY_PLATFORM.downcase == 'java'
+        @pid = Spoon.spawnp(changed, notify_observers(:on_worker_forked, self), execute_cucumber)
+      else
+        @pid = Process.fork {
+          changed
+          notify_observers :on_worker_forked, self
+          execute_cucumber
+        }
+      end
     end
 
     def args
@@ -50,10 +57,10 @@ module CukeForker
     def text
       "[
         #{pid}
-        #{feature}
-        #{status.inspect}
-        #{out}
-        #{data}
+      #{feature}
+      #{status.inspect}
+      #{out}
+      #{data}
        ]"
     end
 
