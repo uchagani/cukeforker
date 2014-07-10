@@ -10,8 +10,12 @@ require "fileutils"
 require "observer"
 require "forwardable"
 require "ostruct"
+require "spoon" if RUBY_PLATFORM == "java"
 
 module CukeForker
+  def self.jruby?
+    defined?(RUBY_PLATFORM) and RUBY_PLATFORM == "java"
+  end
 end
 
 require 'cukeforker/abstract_listener'
