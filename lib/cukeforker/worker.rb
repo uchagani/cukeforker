@@ -32,11 +32,19 @@ module CukeForker
     end
 
     def start
-      @pid = Process.fork {
-        changed
-        notify_observers :on_worker_forked, self
-        execute_cucumber
-      }
+      if CukeForker.jruby?
+        Thread.new do
+          changed
+          notify_observers :on_worker_forked, self
+          execute_cucumber
+        end
+      else
+        @pid = Process.fork {
+          changed
+          notify_observers :on_worker_forked, self
+          execute_cucumber
+        }
+      end
     end
 
     def args
@@ -81,7 +89,12 @@ module CukeForker
       $stdout.reopen stdout
       $stderr.reopen stderr
 
-      failed = Cucumber::Cli::Main.execute args
+      if CukeForker.jruby?
+        @pid = Spoon.spawnp('cucumber', scenario, args)
+        failed = $?.exitstatus
+      else
+        failed = Cucumber::Cli::Main.execute args
+      end
 
       $stdout.flush
       $stderr.flush
